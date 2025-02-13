@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <memory.h>
-
-u_int8_t memory[MEM_SIZE];
+#include <stdlib.h>
+#include <ram.h>
 
 u_int8_t font_sprits[MEM_FONT_SIZE_BYTES*MEM_NUM_CHARS_FONT] = {
     0xF0,0x90,0x90,0x90,0xF0, //0
@@ -22,21 +20,19 @@ u_int8_t font_sprits[MEM_FONT_SIZE_BYTES*MEM_NUM_CHARS_FONT] = {
     0xF0,0x80,0xF0,0x80,0x80  //F
 };
 
-u_int16_t addr_font_sprit_in_mem(u_int16_t character){
-    return character * MEM_FONT_SIZE_BYTES + MEM_ADDR_START_FONT;
-}
-
-void load_font_sprits_to_mem(){
+void init_ram_ctx(Chip8_t* ctx){
+    ctx->ram.memory = (u_int8_t*) calloc(MEM_SIZE, sizeof(u_int8_t));
+    //Load font sprits to ram
     for (int i=MEM_ADDR_START_FONT; i<(MEM_FONT_SIZE_BYTES*MEM_NUM_CHARS_FONT)+MEM_ADDR_START_FONT; i++)
-        memory[i] = font_sprits[i];
+        ctx->ram.memory[i] = font_sprits[i];
 }
 
-int load_rom_to_mem(char* filename){
+int load_rom_to_mem(Chip8_t* ctx, char* filename){
     FILE *file = fopen(filename, "rb");
     if (file == NULL)
         return 1;
 
-    u_int8_t * ram_slot_prog = memory + MEM_ADDR_START_PROG;
+    u_int8_t * ram_slot_prog = ctx->ram.memory + MEM_ADDR_START_PROG;
     int ram_space_prog_left = MEM_SIZE - MEM_ADDR_START_PROG + 1;
     fread(ram_slot_prog, sizeof(u_int8_t), ram_space_prog_left, file);
     fclose(file);
@@ -44,10 +40,14 @@ int load_rom_to_mem(char* filename){
     return 0;
 }
 
-void write_mem(u_int16_t addr, u_int8_t data){
-    memory[addr] = data;
+void write_mem(Chip8_t* ctx, u_int16_t addr, u_int8_t data){
+    ctx->ram.memory[addr] = data;
 }
 
-u_int8_t read_mem(u_int16_t addr){
-    return memory[addr];
+u_int8_t read_mem(Chip8_t* ctx, u_int16_t addr){
+    return ctx->ram.memory[addr];
+}
+
+u_int16_t addr_font_sprit_in_mem(u_int16_t character){
+    return character * MEM_FONT_SIZE_BYTES + MEM_ADDR_START_FONT;
 }
