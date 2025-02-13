@@ -13,6 +13,7 @@ void chip8_init_ctx(Chip8_t* ctx){
     ram_init_ctx(ctx);
     cpu_init_ctx(ctx);
     gpu_init_ctx(ctx);
+    input_init_ctx(ctx);
 }
 
 int main(int argc, char **argv) {
