@@ -6,12 +6,12 @@
 #define MEM_FONT_SIZE_BYTES 5
 #define MEM_NUM_CHARS_FONT 16
 
-void init_ram_ctx(Chip8_t* ctx);
+void ram_init_ctx(Chip8_t* ctx);
 
-int load_rom_to_mem(Chip8_t* ctx, char* filename);
+int ram_load_rom_to_mem(Chip8_t* ctx, char* filename);
 
-void write_mem(Chip8_t* ctx, u_int16_t addr, u_int8_t data);
+void ram_write_mem(Chip8_t* ctx, u_int16_t addr, u_int8_t data);
 
-u_int8_t read_mem(Chip8_t* ctx, u_int16_t addr);
+u_int8_t ram_read_mem(Chip8_t* ctx, u_int16_t addr);
 
-u_int16_t addr_font_sprit_in_mem(u_int16_t character);
+u_int16_t ram_addr_font_sprit_in_mem(u_int16_t character);

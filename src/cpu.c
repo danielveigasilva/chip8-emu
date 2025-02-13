@@ -11,7 +11,7 @@
 #define GET_NN(opcode) ((u_int8_t)((opcode) & 0x00FF))
 #define GET_NNN(opcode) ((opcode) & 0x0FFF)
 
-void init_cpu_ctx(Chip8_t* ctx){
+void cpu_init_ctx(Chip8_t* ctx){
     ctx->cpu.I = 0;
     ctx->cpu.sp = 0;
     ctx->cpu.dt = 0;
@@ -21,14 +21,14 @@ void init_cpu_ctx(Chip8_t* ctx){
     ctx->cpu.callstack = (u_int16_t*) calloc(16, sizeof(u_int16_t));
 }
 
-void fetch_decode_execute_instruction(Chip8_t* ctx){
-    ctx->cpu.opcode = read_mem(ctx, ctx->cpu.pc) << 8 | read_mem(ctx, ctx->cpu.pc + 1);
+void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
+    ctx->cpu.opcode = ram_read_mem(ctx, ctx->cpu.pc) << 8 | ram_read_mem(ctx, ctx->cpu.pc + 1);
     switch (ctx->cpu.opcode & 0xF000){
         case 0x0000:
             switch (ctx->cpu.opcode & 0x0FFF){
                 case 0x00E0:
                     //(00E0) Clears the screen
-                    clear_display(ctx);
+                    gpu_clear_display(ctx);
                     ctx->cpu.pc += 2;
                     break;
                 case 0x00EE:
@@ -38,6 +38,7 @@ void fetch_decode_execute_instruction(Chip8_t* ctx){
                     break;
                 default: 
                     //TODO: (0NNN) Calls machine code routine (RCA 1802 for COSMAC VIP) at address NNN
+                    printf("(0NNN)\n");
                     ctx->cpu.pc += 2;
                     break;
             }
@@ -152,20 +153,20 @@ void fetch_decode_execute_instruction(Chip8_t* ctx){
             break;
         case 0xD000:
             //(DXYN) Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N pixels
-            ctx->cpu.V[0xF] = draw_sprit(ctx, ctx->cpu.V[GET_X(ctx->cpu.opcode)], ctx->cpu.V[GET_Y(ctx->cpu.opcode)], ctx->cpu.I, GET_N(ctx->cpu.opcode));
+            ctx->cpu.V[0xF] = gpu_draw_sprit(ctx, ctx->cpu.V[GET_X(ctx->cpu.opcode)], ctx->cpu.V[GET_Y(ctx->cpu.opcode)], ctx->cpu.I, GET_N(ctx->cpu.opcode));
             ctx->cpu.pc += 2;
             break;
         case 0xE000:
             switch (ctx->cpu.opcode & 0x00FF)
             {
                 case 0x009E:
-                    //TODO: (EX9E) Skips the next instruction if the key stored in VX(only consider the lowest nibble) is pressed
+                    //(EX9E) Skips the next instruction if the key stored in VX(only consider the lowest nibble) is pressed
                     if (ctx->input.keys[ctx->cpu.V[GET_X(ctx->cpu.opcode)]])
                         ctx->cpu.pc += 2;
                     ctx->cpu.pc += 2;
                     break;
                 case 0x00A1:
-                    //TODO: (EXA1) Skips the next instruction if the key stored in VX(only consider the lowest nibble) is not pressed
+                    //(EXA1) Skips the next instruction if the key stored in VX(only consider the lowest nibble) is not pressed
                     if (!ctx->input.keys[ctx->cpu.V[GET_X(ctx->cpu.opcode)]])
                         ctx->cpu.pc += 2;
                     ctx->cpu.pc += 2;
@@ -184,6 +185,7 @@ void fetch_decode_execute_instruction(Chip8_t* ctx){
                     break;
                 case 0x000A:
                     //TODO: (FX0A) A key press is awaited, and then stored in VX
+                    printf("(FX0A)\n");
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0015:
@@ -203,23 +205,24 @@ void fetch_decode_execute_instruction(Chip8_t* ctx){
                     break;
                 case 0x0029:
                     //(FX29) Sets I to the location of the sprite for the character in VX(only consider the lowest nibble). Characters 0-F (in hexadecimal) are represented by a 4x5 font
-                    ctx->cpu.I = addr_font_sprit_in_mem(GET_X(ctx->cpu.opcode) & 0x000F);
+                    ctx->cpu.I = ram_addr_font_sprit_in_mem(GET_X(ctx->cpu.opcode) & 0x000F);
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0033:
                     //TODO: (FX33) Stores the binary-coded decimal representation of VX, with the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2
                     ctx->cpu.pc += 2;
+                    printf("(FX33)\n");
                     break;
                 case 0x0055:
                     //(FX55) Stores from V0 to VX (including VX) in memory, starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified
                     for (int i = 0; i < (int)(GET_X(ctx->cpu.opcode) + 1); i++)
-                        write_mem(ctx, ctx->cpu.I + i, ctx->cpu.V[i]);
+                        ram_write_mem(ctx, ctx->cpu.I + i, ctx->cpu.V[i]);
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0065:
                     //(FX65) Fills from V0 to VX (including VX) with values from memory, starting at address I. The offset from I is increased by 1 for each value read, but I itself is left unmodified
                     for (int i = 0; i < (int)(GET_X(ctx->cpu.opcode) + 1); i++)
-                        ctx->cpu.V[i] = read_mem(ctx, ctx->cpu.I + i);
+                        ctx->cpu.V[i] = ram_read_mem(ctx, ctx->cpu.I + i);
                     ctx->cpu.pc += 2;
                     break;
                 default:
@@ -231,7 +234,7 @@ void fetch_decode_execute_instruction(Chip8_t* ctx){
     }
 }
 
-void update_timers(Chip8_t* ctx){
+void cpu_update_timers(Chip8_t* ctx){
     if (ctx->cpu.dt > 0)
         ctx->cpu.dt--;
     if (ctx->cpu.st > 0){

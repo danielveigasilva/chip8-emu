@@ -20,14 +20,14 @@ u_int8_t font_sprits[MEM_FONT_SIZE_BYTES*MEM_NUM_CHARS_FONT] = {
     0xF0,0x80,0xF0,0x80,0x80  //F
 };
 
-void init_ram_ctx(Chip8_t* ctx){
+void ram_init_ctx(Chip8_t* ctx){
     ctx->ram.memory = (u_int8_t*) calloc(MEM_SIZE, sizeof(u_int8_t));
     //Load font sprits to ram
     for (int i=MEM_ADDR_START_FONT; i<(MEM_FONT_SIZE_BYTES*MEM_NUM_CHARS_FONT)+MEM_ADDR_START_FONT; i++)
         ctx->ram.memory[i] = font_sprits[i];
 }
 
-int load_rom_to_mem(Chip8_t* ctx, char* filename){
+int ram_load_rom_to_mem(Chip8_t* ctx, char* filename){
     FILE *file = fopen(filename, "rb");
     if (file == NULL)
         return 1;
@@ -40,14 +40,14 @@ int load_rom_to_mem(Chip8_t* ctx, char* filename){
     return 0;
 }
 
-void write_mem(Chip8_t* ctx, u_int16_t addr, u_int8_t data){
+void ram_write_mem(Chip8_t* ctx, u_int16_t addr, u_int8_t data){
     ctx->ram.memory[addr] = data;
 }
 
-u_int8_t read_mem(Chip8_t* ctx, u_int16_t addr){
+u_int8_t ram_read_mem(Chip8_t* ctx, u_int16_t addr){
     return ctx->ram.memory[addr];
 }
 
-u_int16_t addr_font_sprit_in_mem(u_int16_t character){
+u_int16_t ram_addr_font_sprit_in_mem(u_int16_t character){
     return character * MEM_FONT_SIZE_BYTES + MEM_ADDR_START_FONT;
 }

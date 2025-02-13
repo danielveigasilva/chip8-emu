@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Iinclude -Wall -g
-SRC = src/main.c src/cpu.c src/ram.c src/helper.c src/gpu.c
+SRC = src/main.c src/cpu.c src/ram.c src/helper.c src/gpu.c src/input.c
 OBJ = $(SRC:src/%.c=build/%.o)
 TARGET = bin/chip8-emu
 BUILD_DIR = build
