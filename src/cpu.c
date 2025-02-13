@@ -136,6 +136,12 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                     break;
             }
             break;
+        case 0x9000:
+            //(9XY0) Skips the next instruction if VX does not equal VY
+            if (ctx->cpu.V[GET_X(ctx->cpu.opcode)] != ctx->cpu.V[GET_Y(ctx->cpu.opcode)])
+                ctx->cpu.pc += 2;
+            ctx->cpu.pc += 2;
+            break;
         case 0xA000:
             //(ANNN) Sets I to the address NNN
             ctx->cpu.I = GET_NNN(ctx->cpu.opcode);
@@ -184,9 +190,14 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                     ctx->cpu.pc += 2;
                     break;
                 case 0x000A:
-                    //TODO: (FX0A) A key press is awaited, and then stored in VX
-                    printf("(FX0A)\n");
-                    ctx->cpu.pc += 2;
+                    //(FX0A) A key press is awaited, and then stored in VX
+                    for (u_int8_t i = 0; i < 16; i++){
+                        if (ctx->input.keys[i]){
+                            ctx->cpu.V[GET_X(ctx->cpu.opcode)] = i;
+                            ctx->cpu.pc += 2;
+                            break;
+                        }
+                    }
                     break;
                 case 0x0015:
                     //(FX15) Sets the delay timer to VX
@@ -209,9 +220,11 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0033:
-                    //TODO: (FX33) Stores the binary-coded decimal representation of VX, with the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2
+                    //(FX33) Stores the binary-coded decimal representation of VX, with the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2
+                    ram_write_mem(ctx, ctx->cpu.I, ((int)ctx->cpu.V[GET_X(ctx->cpu.opcode)]/100)%10);
+                    ram_write_mem(ctx, ctx->cpu.I+1, ((int)ctx->cpu.V[GET_X(ctx->cpu.opcode)]/10)%10);
+                    ram_write_mem(ctx, ctx->cpu.I+2, ((int)ctx->cpu.V[GET_X(ctx->cpu.opcode)]/1)%10);
                     ctx->cpu.pc += 2;
-                    printf("(FX33)\n");
                     break;
                 case 0x0055:
                     //(FX55) Stores from V0 to VX (including VX) in memory, starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified

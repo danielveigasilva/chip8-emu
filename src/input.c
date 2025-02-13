@@ -2,8 +2,7 @@
 #include <stdlib.h>
 
 SDL_Keycode input_remap_keys(u_int8_t key){
-    switch (key)
-    {
+    switch (key){
         case 0x1:
             return SDLK_1;
         case 0x2:
@@ -50,17 +49,17 @@ void input_init_ctx(Chip8_t* ctx){
 }
 
 void input_handle_key_event(Chip8_t* ctx, SDL_Event event){
-    
-    switch (event.type)
-    {
+    switch (event.type){
         case SDL_QUIT:
             ctx->state = CHIP8_STOPPED;
             break;
         case SDL_KEYDOWN:
-            switch (event.key.keysym.sym)
-            {
+            switch (event.key.keysym.sym){
                 case SDLK_SPACE:
                     ctx->state = ctx->state == CHIP8_PAUSED ? CHIP8_RUNNING : CHIP8_PAUSED;
+                    break;
+                case SDLK_F5:
+                    ctx->state = ctx->state == CHIP8_DEBUG ? CHIP8_RUNNING : CHIP8_DEBUG;
                     break;
                 default:
                     for (u_int8_t i = 0; i < 16; i++)
