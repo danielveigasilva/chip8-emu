@@ -110,13 +110,13 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                 case 0x0005:
                     //(8XY5) VY is subtracted from VX. VF is set to 0 when there's an underflow, and 1 when there is not
                     ctx->cpu.V[GET_X(ctx->cpu.opcode)] -= ctx->cpu.V[GET_Y(ctx->cpu.opcode)];
-                    ctx->cpu.V[0xF] = ctx->cpu.V[GET_X(ctx->cpu.opcode)] < ctx->cpu.V[GET_Y(ctx->cpu.opcode)] ? 0 : 1;
+                    ctx->cpu.V[0xF] = ctx->cpu.V[GET_X(ctx->cpu.opcode)] >= ctx->cpu.V[GET_Y(ctx->cpu.opcode)] ? 0 : 1;
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0006:
                     //(8XY6) Shifts VX to the right by 1, then stores the least significant bit of VX prior to the shift into VF
-                    ctx->cpu.V[GET_X(ctx->cpu.opcode)] >>= 1;
                     ctx->cpu.V[0xF] = ctx->cpu.V[GET_X(ctx->cpu.opcode)] & 0b00000001;
+                    ctx->cpu.V[GET_X(ctx->cpu.opcode)] >>= 1;
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0007:
@@ -126,10 +126,10 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                     ctx->cpu.pc += 2;
                     break;
                 case 0x000E:
-                    //(8XYE) Skips the next instruction if VX does not equal VY
+                    //(8XYE) Shifts VX to the left by 1, then sets VF to 1 if the most significant bit of VX prior to that shift was set, or to 0 if it was unset.
+                    ctx->cpu.V[0xF] = (ctx->cpu.V[GET_X(ctx->cpu.opcode)] & 0b10000000) >> 7;
+                    ctx->cpu.V[GET_X(ctx->cpu.opcode)] <<= 1;
                     ctx->cpu.pc += 2;
-                    if (ctx->cpu.V[GET_X(ctx->cpu.opcode)] != ctx->cpu.V[GET_Y(ctx->cpu.opcode)])
-                        ctx->cpu.pc += 2;
                     break;
                 default: 
                     break;
