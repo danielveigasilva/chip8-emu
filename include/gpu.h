@@ -2,7 +2,7 @@
 
 #define DISPLAY_HEIGHT 32
 #define DISPLAY_WIDTH 64
-#define DISPLAY_SCALE 20
+#define DISPLAY_SCALE 10
 
 void gpu_init_ctx(Chip8_t* ctx);
 

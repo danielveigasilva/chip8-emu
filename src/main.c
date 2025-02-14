@@ -20,7 +20,9 @@ int main(int argc, char **argv) {
 
     Chip8_t ctx;
     chip8_init_ctx(&ctx);
-    ctx.input.keys = (u_int8_t*) calloc(16, sizeof(u_int8_t));
+
+    ctx.intructions_per_second = argc > 2 ? atoi(argv[2]) : 700;
+    ctx.fps = 60;
 
     if (ram_load_rom_to_mem(&ctx, argv[1]))
         return 1;
@@ -38,6 +40,8 @@ int main(int argc, char **argv) {
     SDL_RenderSetScale(renderer, DISPLAY_SCALE, DISPLAY_SCALE);
 
     while(ctx.state != CHIP8_STOPPED){
+
+        int init_time_cycle = SDL_GetTicks();
         
         while (SDL_PollEvent(&event) != 0)
             input_handle_key_event(&ctx, event);
@@ -45,9 +49,17 @@ int main(int argc, char **argv) {
         if (ctx.state == CHIP8_PAUSED || ctx.state == CHIP8_STOPPED)
             continue;
 
-        for (int i = 0; i < 700/60; i++)
+        for (int i = 0; i < ctx.intructions_per_second/ctx.fps; i++)
             cpu_fetch_decode_execute_instruction(&ctx);
         
+        int end_time_cycle = SDL_GetTicks();
+        int time_instructions = (end_time_cycle - init_time_cycle);
+
+        if (time_instructions < (1000/ctx.fps))
+            SDL_Delay((1000/ctx.fps)-time_instructions);
+
+        cpu_update_timers(&ctx);
+
         if (ctx.gpu.update_display){
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
             SDL_RenderClear(renderer);
@@ -61,9 +73,6 @@ int main(int argc, char **argv) {
             SDL_RenderPresent(renderer);
             ctx.gpu.update_display = 0;
         }
-
-        SDL_Delay(16);
-        cpu_update_timers(&ctx);
     }
 
     SDL_DestroyRenderer(renderer);

@@ -41,6 +41,8 @@ typedef struct {
     Ram_t ram;
     Input_t input;
     Chip8State_t state;
+    int intructions_per_second;
+    int fps;
 } Chip8_t;
 
 #endif
