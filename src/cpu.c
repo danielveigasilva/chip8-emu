@@ -37,8 +37,7 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                     ctx->cpu.pc += 2;
                     break;
                 default: 
-                    //TODO: (0NNN) Calls machine code routine (RCA 1802 for COSMAC VIP) at address NNN
-                    printf("(0NNN)\n");
+                    //(0NNN) Calls machine code routine (RCA 1802 for COSMAC VIP) at address NNN
                     ctx->cpu.pc += 2;
                     break;
             }
@@ -216,7 +215,7 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                     break;
                 case 0x0029:
                     //(FX29) Sets I to the location of the sprite for the character in VX(only consider the lowest nibble). Characters 0-F (in hexadecimal) are represented by a 4x5 font
-                    ctx->cpu.I = ram_addr_font_sprit_in_mem(GET_X(ctx->cpu.opcode) & 0x000F);
+                    ctx->cpu.I = ram_addr_font_sprit_in_mem(ctx->cpu.V[GET_X(ctx->cpu.opcode)] & 0x000F);
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0033:
