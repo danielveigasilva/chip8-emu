@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <SDL2/SDL.h>
+#include <libgen.h>
 #include <chip8.h>
 #include <cpu.h>
 #include <ram.h>
 #include <gpu.h>
-#include <helper.h>
 #include <input.h>
-#include <SDL2/SDL.h>
-
 
 void chip8_init_ctx(Chip8_t* ctx){
     ram_init_ctx(ctx);
@@ -21,8 +20,10 @@ int main(int argc, char **argv) {
     Chip8_t ctx;
     chip8_init_ctx(&ctx);
 
-    ctx.intructions_per_second = argc > 2 ? atoi(argv[2]) : 700;
     ctx.fps = 60;
+    ctx.intructions_per_second = argc > 2 ? atoi(argv[2]) : 700;
+    if (ctx.intructions_per_second < ctx.fps)
+        return 1;
 
     if (ram_load_rom_to_mem(&ctx, argv[1]))
         return 1;
@@ -36,7 +37,7 @@ int main(int argc, char **argv) {
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_CreateWindowAndRenderer(DISPLAY_WIDTH*DISPLAY_SCALE, DISPLAY_HEIGHT*DISPLAY_SCALE, 0, &window, &renderer);
-    SDL_SetWindowTitle(window, "CHIP-8");
+    SDL_SetWindowTitle(window, basename(argv[1]));
     SDL_RenderSetScale(renderer, DISPLAY_SCALE, DISPLAY_SCALE);
 
     while(ctx.state != CHIP8_STOPPED){
@@ -55,8 +56,9 @@ int main(int argc, char **argv) {
         int end_time_cycle = SDL_GetTicks();
         int time_instructions = (end_time_cycle - init_time_cycle);
 
-        if (time_instructions < (1000/ctx.fps))
-            SDL_Delay((1000/ctx.fps)-time_instructions);
+        int time_delay = 1000/ctx.fps;
+        if (time_instructions < time_delay)
+            SDL_Delay(time_delay - time_instructions);
 
         cpu_update_timers(&ctx);
 

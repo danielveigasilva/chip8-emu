@@ -7,8 +7,7 @@
 typedef enum {
     CHIP8_RUNNING,
     CHIP8_PAUSED,
-    CHIP8_STOPPED,
-    CHIP8_DEBUG
+    CHIP8_STOPPED
 } Chip8State_t;
 
 typedef struct {

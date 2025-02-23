@@ -1,9 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <SDL2/SDL.h>
 #include <cpu.h>
 #include <ram.h>
 #include <gpu.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
 #define GET_X(opcode) (((opcode) & 0x0F00) >> 8)
 #define GET_Y(opcode) (((opcode) & 0x00F0) >> 4)
@@ -103,14 +103,14 @@ void cpu_fetch_decode_execute_instruction(Chip8_t* ctx){
                     break;
                 case 0x0004:
                     //(8XY4) Adds VY to VX. VF is set to 1 when there's an overflow, and to 0 when there is not
-                    ctx->cpu.V[0xF] = (u_int8_t) ((((u_int16_t) ctx->cpu.V[GET_X(ctx->cpu.opcode)] + (u_int16_t) ctx->cpu.V[GET_Y(ctx->cpu.opcode)]) & 0xF00) >> 8); //TODO: Review overflow bit
+                    ctx->cpu.V[0xF] = ctx->cpu.V[GET_X(ctx->cpu.opcode)] + ctx->cpu.V[GET_Y(ctx->cpu.opcode)] > 255 ? 1 : 0;
                     ctx->cpu.V[GET_X(ctx->cpu.opcode)] += ctx->cpu.V[GET_Y(ctx->cpu.opcode)];
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0005:
                     //(8XY5) VY is subtracted from VX. VF is set to 0 when there's an underflow, and 1 when there is not
+                    ctx->cpu.V[0xF] = ctx->cpu.V[GET_X(ctx->cpu.opcode)] >= ctx->cpu.V[GET_Y(ctx->cpu.opcode)] ? 1 : 0;
                     ctx->cpu.V[GET_X(ctx->cpu.opcode)] -= ctx->cpu.V[GET_Y(ctx->cpu.opcode)];
-                    ctx->cpu.V[0xF] = ctx->cpu.V[GET_X(ctx->cpu.opcode)] >= ctx->cpu.V[GET_Y(ctx->cpu.opcode)] ? 0 : 1;
                     ctx->cpu.pc += 2;
                     break;
                 case 0x0006:

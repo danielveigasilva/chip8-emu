@@ -58,9 +58,6 @@ void input_handle_key_event(Chip8_t* ctx, SDL_Event event){
                 case SDLK_SPACE:
                     ctx->state = ctx->state == CHIP8_PAUSED ? CHIP8_RUNNING : CHIP8_PAUSED;
                     break;
-                case SDLK_F5:
-                    ctx->state = ctx->state == CHIP8_DEBUG ? CHIP8_RUNNING : CHIP8_DEBUG;
-                    break;
                 default:
                     for (u_int8_t i = 0; i < 16; i++)
                         if (event.key.keysym.sym == input_remap_keys(i))
